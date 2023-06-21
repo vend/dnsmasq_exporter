@@ -1,5 +1,13 @@
 # dnsmasq exporter
 
+## Fork note:
+<img src="https://media4.giphy.com/media/R460fSKdDvvWw/giphy.gif"/>
+Hi there,<br>
+While you can still download our latest build you should visit: https://github.com/google/dnsmasq_exporter
+
+
+# Original README:
+
 [![Build Status](https://github.com/google/dnsmasq_exporter/actions/workflows/go.yml/badge.svg?branch=main)](https://github.com/google/dnsmasq_exporter/actions)
 
 dnsmasq_exporter is an exporter for [Prometheus](https://prometheus.io/),
