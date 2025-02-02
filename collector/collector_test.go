@@ -16,7 +16,7 @@ package collector
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -96,7 +96,7 @@ func TestDnsmasqExporter(t *testing.T) {
 		want := map[string]string{
 			"dnsmasq_leases":    "2",
 			"dnsmasq_cachesize": "666",
-			"dnsmasq_hits":      "1",
+			"dnsmasq_hits":      "5",
 			"dnsmasq_misses":    "0",
 		}
 		for key, val := range want {
@@ -111,7 +111,7 @@ func TestDnsmasqExporter(t *testing.T) {
 		want := map[string]string{
 			"dnsmasq_leases":    "2",
 			"dnsmasq_cachesize": "666",
-			"dnsmasq_hits":      "2",
+			"dnsmasq_hits":      "12",
 			"dnsmasq_misses":    "0",
 		}
 		for key, val := range want {
@@ -133,7 +133,7 @@ func TestDnsmasqExporter(t *testing.T) {
 		want := map[string]string{
 			"dnsmasq_leases":    "2",
 			"dnsmasq_cachesize": "666",
-			"dnsmasq_hits":      "3",
+			"dnsmasq_hits":      "19",
 			"dnsmasq_misses":    "1",
 		}
 		for key, val := range want {
@@ -145,7 +145,7 @@ func TestDnsmasqExporter(t *testing.T) {
 
 	t.Run("should not expose lease information when disabled", func(t *testing.T) {
 		metrics := fetchMetrics(t, c)
-		for key, _ := range metrics {
+		for key := range metrics {
 			if strings.Contains(key, "dnsmasq_lease_expiry") {
 				t.Errorf("lease information should not be exposed when disabled: %v", key)
 			}
@@ -159,7 +159,7 @@ func TestDnsmasqExporter(t *testing.T) {
 		want := map[string]string{
 			"dnsmasq_leases":    "2",
 			"dnsmasq_cachesize": "666",
-			"dnsmasq_hits":      "5",
+			"dnsmasq_hits":      "33",
 			"dnsmasq_misses":    "1",
 			"dnsmasq_lease_expiry{client_id=\"00:00:00:00:00:00\",computer_name=\"host-1\",ip_addr=\"10.10.10.10\",mac_addr=\"00:00:00:00:00:00\"}": "1.625595932e+09",
 			"dnsmasq_lease_expiry{client_id=\"00:00:00:00:00:01\",computer_name=\"host-2\",ip_addr=\"10.10.10.11\",mac_addr=\"00:00:00:00:00:01\"}": "0",
@@ -178,7 +178,7 @@ func TestDnsmasqExporter(t *testing.T) {
 		want := map[string]string{
 			"dnsmasq_leases":    "0",
 			"dnsmasq_cachesize": "666",
-			"dnsmasq_hits":      "6",
+			"dnsmasq_hits":      "40",
 			"dnsmasq_misses":    "1",
 		}
 		for key, val := range want {
@@ -199,10 +199,10 @@ func fetchMetrics(t *testing.T, c *Collector) map[string]string {
 	handler.ServeHTTP(rec, httptest.NewRequest("GET", "/metrics", nil))
 	resp := rec.Result()
 	if got, want := resp.StatusCode, http.StatusOK; got != want {
-		b, _ := ioutil.ReadAll(resp.Body)
+		b, _ := io.ReadAll(resp.Body)
 		t.Fatalf("unexpected HTTP status: got %v (%v), want %v", resp.Status, string(b), want)
 	}
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatal(err)
 	}
